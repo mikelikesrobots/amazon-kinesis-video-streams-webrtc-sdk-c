@@ -60,7 +60,7 @@ extern "C" {
 #define KVS_USE_SIGNALING_CHANNEL_THREADPOOL 1
 
 /* Uncomment the following line in order to enable IoT credentials checks in the provided samples */
-// #define IOT_CORE_ENABLE_CREDENTIALS  1
+#define IOT_CORE_ENABLE_CREDENTIALS  1
 
 typedef enum {
     SAMPLE_STREAMING_VIDEO_ONLY,
@@ -71,6 +71,7 @@ typedef enum {
     TEST_SOURCE,
     DEVICE_SOURCE,
     RTSP_SOURCE,
+    NVARGUS_SOURCE,
 } SampleSourceType;
 
 typedef struct __SampleStreamingSession SampleStreamingSession;

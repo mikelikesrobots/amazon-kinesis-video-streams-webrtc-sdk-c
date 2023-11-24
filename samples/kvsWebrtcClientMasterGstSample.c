@@ -170,6 +170,13 @@ PVOID sendGstreamerAudioVideo(PVOID args)
                                                 &error);
                     break;
                 }
+                case NVARGUS_SOURCE: {
+                    pipeline = gst_parse_launch("nvarguscamerasrc do-timestamp=TRUE ! nvv4l2h264enc ! h264parse ! "
+                                                "video/x-h264,stream-format=byte-stream,alignment=au,profile=baseline,width=1280,height=720,framerate=25/1 ! "
+                                                "appsink sync=TRUE emit-signals=TRUE name=appsink-video",
+                                                &error);
+                    break;
+                }
                 case RTSP_SOURCE: {
                     UINT16 stringOutcome = snprintf(rtspPipeLineBuffer, RTSP_PIPELINE_MAX_CHAR_COUNT,
                                                     "uridecodebin uri=%s ! "
@@ -420,10 +427,14 @@ INT32 main(INT32 argc, CHAR* argv[])
         if (STRCMP(argv[2], "video-only") == 0) {
             pSampleConfiguration->mediaType = SAMPLE_STREAMING_VIDEO_ONLY;
             DLOGI("[KVS Gstreamer Master] Streaming video only");
+        } else if (STRCMP(argv[2], "video-only-storage") == 0) {
+            pSampleConfiguration->mediaType = SAMPLE_STREAMING_VIDEO_ONLY;
+            pSampleConfiguration->channelInfo.useMediaStorage = TRUE;
+            DLOGI("[KVS Gstreamer Master] Streaming video only with storage");
         } else if (STRCMP(argv[2], "audio-video-storage") == 0) {
             pSampleConfiguration->mediaType = SAMPLE_STREAMING_AUDIO_VIDEO;
             pSampleConfiguration->channelInfo.useMediaStorage = TRUE;
-            DLOGI("[KVS Gstreamer Master] Streaming audio and video");
+            DLOGI("[KVS Gstreamer Master] Streaming audio and video with storage");
         } else if (STRCMP(argv[2], "audio-video") == 0) {
             pSampleConfiguration->mediaType = SAMPLE_STREAMING_AUDIO_VIDEO;
             DLOGI("[KVS Gstreamer Master] Streaming audio and video");
@@ -441,6 +452,9 @@ INT32 main(INT32 argc, CHAR* argv[])
         } else if (STRCMP(argv[3], "devicesrc") == 0) {
             DLOGI("[KVS GStreamer Master] Using device source in GStreamer");
             pSampleConfiguration->srcType = DEVICE_SOURCE;
+        } else if (STRCMP(argv[3], "nvargussrc") == 0) {
+            DLOGI("[KVS GStreamer Master] Using nvargus source");
+            pSampleConfiguration->srcType = NVARGUS_SOURCE;
         } else if (STRCMP(argv[3], "rtspsrc") == 0) {
             DLOGI("[KVS GStreamer Master] Using RTSP source in GStreamer");
             if (argc < 5) {
@@ -456,7 +470,7 @@ INT32 main(INT32 argc, CHAR* argv[])
             DLOGI("[KVS Gstreamer Master] Unrecognized source type. Defaulting to device source in GStreamer");
         }
     } else {
-        printf("[KVS GStreamer Master] Using device source in GStreamer\n");
+        printf("[KVS GStreamer Master] Defaulting to device source in GStreamer\n");
     }
 
     switch (pSampleConfiguration->mediaType) {
@@ -477,7 +491,7 @@ INT32 main(INT32 argc, CHAR* argv[])
 
     // Checking for termination
     CHK_STATUS(sessionCleanupWait(pSampleConfiguration));
-    DLOGI("[KVS GStreamer Master] Streaming session terminated");
+    printf("[KVS GStreamer Master] Streaming session terminated\n");
 
 CleanUp:
 
